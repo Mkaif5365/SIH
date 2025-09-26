@@ -396,54 +396,30 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           SizedBox(height: 20),
-                          Column(
+                          Row(
                             children: [
-                              Container(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: _isDownloading ? null : _downloadQR,
-                                  icon: _isDownloading 
-                                    ? SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                      )
-                                    : Icon(Icons.download),
-                                  label: Text(_isDownloading ? 'Downloading...' : 'Print QR Code'),
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _resetForm,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.teal[600],
+                                    side: BorderSide(color: Colors.teal[600]!),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: Text('Create Another'),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () => Navigator.pop(context),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green[600],
+                                    backgroundColor: Colors.teal[600],
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
+                                  child: Text('Done'),
                                 ),
-                              ),
-                              SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: _resetForm,
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: Colors.teal[600],
-                                        side: BorderSide(color: Colors.teal[600]!),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      ),
-                                      child: Text('Create Another'),
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.teal[600],
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      ),
-                                      child: Text('Done'),
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ),

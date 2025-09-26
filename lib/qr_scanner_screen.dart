@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'models/scan_history_model.dart';
 import 'services/parts_service.dart';
 import 'services/scan_history_service.dart';
+import 'services/firebase_service.dart';
 import 'qr_result_screen.dart';
 
 class QRScannerScreen extends StatefulWidget {
@@ -309,7 +310,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           status: 'scanned',
         );
         
-        await _scanHistoryService.addScanHistory(scanHistory);
+        await FirebaseService.addScanHistory(scanHistory);
         
         // Navigate to result screen
         Navigator.push(
@@ -373,7 +374,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     _scannerController?.stop();
     
     try {
-      final part = await _partsService.getPartById(code);
+      final part = await FirebaseService.getPartById(code);
       
       if (part != null) {
         final scanHistory = ScanHistoryModel(
@@ -386,7 +387,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           status: 'scanned',
         );
         
-        await _scanHistoryService.addScanHistory(scanHistory);
+        await FirebaseService.addScanHistory(scanHistory);
         
         Navigator.push(
           context,

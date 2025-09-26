@@ -25,9 +25,10 @@ class ScanHistoryModel {
     this.inspectionData,
   });
 
-  factory ScanHistoryModel.fromMap(Map<String, dynamic> data, String id) {
+  factory ScanHistoryModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return ScanHistoryModel(
-      id: id,
+      id: doc.id,
       inspectorId: data['inspectorId'] ?? '',
       partId: data['partId'] ?? '',
       partName: data['partName'] ?? '',
@@ -40,7 +41,7 @@ class ScanHistoryModel {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
       'inspectorId': inspectorId,
       'partId': partId,
