@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'models/scan_history_model.dart';
-import 'services/parts_service.dart';
+
 import 'services/scan_history_service.dart';
 import 'services/firebase_service.dart';
 import 'qr_result_screen.dart';
@@ -21,7 +21,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   bool _showCamera = false;
   MobileScannerController? _scannerController;
   final TextEditingController _manualController = TextEditingController();
-  final PartsService _partsService = PartsService();
+
   final ScanHistoryService _scanHistoryService = ScanHistoryService();
   
   @override
@@ -296,7 +296,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
     try {
       // Fetch part details from Firebase
-      final part = await _partsService.getPartById(partId);
+      final part = await FirebaseService.getPartById(partId);
       
       if (part != null) {
         // Save scan history

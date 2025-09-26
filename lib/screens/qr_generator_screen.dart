@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../models/part_model.dart';
-import '../services/parts_service.dart';
-import '../services/qr_download_service.dart';
+
+import '../services/firebase_service.dart';
 
 class QRGeneratorScreen extends StatefulWidget {
   final String vendorId;
@@ -22,7 +22,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   final _warrantyController = TextEditingController();
   final _inspectionIntervalController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final PartsService _partsService = PartsService();
+
   final GlobalKey _qrKey = GlobalKey();
   
   DateTime _manufacturingDate = DateTime.now();
@@ -70,7 +70,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         status: 'active',
       );
       
-      final partId = await _partsService.createPart(part);
+      final partId = await FirebaseService.createPart(part);
       
       setState(() {
         _generatedPartId = partId;
@@ -113,7 +113,15 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     setState(() => _isDownloading = true);
     
     try {
-      bool success = await QRDownloadService.downloadQRCode(
+      // QR download functionality removed
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('QR Code generated successfully! Screenshot to save.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      return;
+      /*bool success = await QRDownloadService.downloadQRCode(
         _qrKey, 
         _partNameController.text.trim()
       );
@@ -127,7 +135,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         );
       } else {
         throw Exception('Failed to save QR code');
-      }
+      }*/
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

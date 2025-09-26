@@ -31,7 +31,7 @@ class FirebaseService {
       User? user = result.user;
       if (user != null) {
         UserModel newUser = UserModel(
-          id: user.uid,
+          uid: user.uid,
           name: name,
           email: email,
           role: role,
@@ -53,7 +53,7 @@ class FirebaseService {
   // Parts Management
   static Future<String> createPart(PartModel part) async {
     try {
-      DocumentReference docRef = await _firestore.collection('parts').add(part.toMap());
+      DocumentReference docRef = await _firestore.collection('parts').add(part.toFirestore());
       await docRef.update({'id': docRef.id});
       return docRef.id;
     } catch (e) {
@@ -66,7 +66,7 @@ class FirebaseService {
     try {
       DocumentSnapshot doc = await _firestore.collection('parts').doc(partId).get();
       if (doc.exists) {
-        return PartModel.fromMap(doc.data() as Map<String, dynamic>);
+        return PartModel.fromFirestore(doc);
       }
     } catch (e) {
       print('Get part error: $e');
@@ -80,7 +80,7 @@ class FirebaseService {
         .where('vendorId', isEqualTo: vendorId)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => PartModel.fromMap(doc.data()))
+            .map((doc) => PartModel.fromFirestore(doc))
             .toList());
   }
 
@@ -96,7 +96,7 @@ class FirebaseService {
   // Scan History Management
   static Future<String> addScanHistory(ScanHistoryModel scanHistory) async {
     try {
-      DocumentReference docRef = await _firestore.collection('scan_history').add(scanHistory.toMap());
+      DocumentReference docRef = await _firestore.collection('scan_history').add(scanHistory.toFirestore());
       await docRef.update({'id': docRef.id});
       return docRef.id;
     } catch (e) {
@@ -112,7 +112,7 @@ class FirebaseService {
         .orderBy('scannedAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => ScanHistoryModel.fromMap(doc.data()))
+            .map((doc) => ScanHistoryModel.fromFirestore(doc))
             .toList());
   }
 
