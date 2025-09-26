@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/part_model.dart';
 
 import '../services/firebase_service.dart';
+import '../services/qr_download_service.dart';
 
 class QRGeneratorScreen extends StatefulWidget {
   final String vendorId;
@@ -113,29 +114,22 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     setState(() => _isDownloading = true);
     
     try {
-      // QR download functionality removed
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('QR Code generated successfully! Screenshot to save.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      return;
-      /*bool success = await QRDownloadService.downloadQRCode(
+      String? filePath = await QRDownloadService.downloadQRCode(
         _qrKey, 
         _partNameController.text.trim()
       );
       
-      if (success) {
+      if (filePath != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('QR Code saved to gallery!'),
+            content: Text('QR Code saved to: $filePath'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
           ),
         );
       } else {
         throw Exception('Failed to save QR code');
-      }*/
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -404,30 +398,55 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           SizedBox(height: 20),
-                          Row(
+                          Column(
                             children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: _resetForm,
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.teal[600],
-                                    side: BorderSide(color: Colors.teal[600]!),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  child: Text('Create Another'),
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () => Navigator.pop(context),
+                              Container(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  onPressed: _isDownloading ? null : _downloadQR,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.teal[600],
+                                    backgroundColor: Colors.orange[600],
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
-                                  child: Text('Done'),
+                                  icon: _isDownloading 
+                                    ? SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      )
+                                    : Icon(Icons.download),
+                                  label: Text(_isDownloading ? 'Downloading...' : 'Print QR Code'),
                                 ),
+                              ),
+                              SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: _resetForm,
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.teal[600],
+                                        side: BorderSide(color: Colors.teal[600]!),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      child: Text('Create Another'),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal[600],
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      child: Text('Done'),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

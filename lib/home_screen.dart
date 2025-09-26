@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'simple_auth_screen.dart';
 import 'services/auth_service.dart';
+import 'models/user_model.dart';
 import 'qr_scanner_screen.dart';
 import 'screens/qr_generator_screen.dart';
 import 'screens/inventory_screen.dart';
@@ -22,12 +23,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final AuthService _authService = AuthService();
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  UserModel? _currentUser;
   
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(duration: Duration(seconds: 2), vsync: this)..repeat(reverse: true);
     _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+    _loadUserData();
   }
 
   @override
@@ -36,8 +39,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  String get _currentUserId => 'demo_user';
-  String get _currentUserName => 'Demo User';
+  Future<void> _loadUserData() async {
+    final user = await _authService.getCurrentUserData();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
+  }
+
+  String get _currentUserId => _currentUser?.uid ?? 'unknown';
+  String get _currentUserName => _currentUser?.name ?? 'User';
+  String get _currentUserEmail => _currentUser?.email ?? 'No email';
 
   @override
   Widget build(BuildContext context) {
@@ -239,30 +252,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(12)),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Email: demo@qrail.com', style: TextStyle(fontWeight: FontWeight.w500)),
+                  Row(
+                    children: [
+                      Icon(Icons.person, color: Colors.blue, size: 20),
+                      SizedBox(width: 8),
+                      Text('Name: $_currentUserName', style: TextStyle(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
                   SizedBox(height: 8),
-                  Text('Role: ${widget.userRole.toUpperCase()}', style: TextStyle(fontWeight: FontWeight.w500)),
+                  Row(
+                    children: [
+                      Icon(Icons.email, color: Colors.blue, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(child: Text('Email: $_currentUserEmail', style: TextStyle(fontWeight: FontWeight.w500))),
+                    ],
+                  ),
                   SizedBox(height: 8),
-                  Text('User ID: $_currentUserId', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  Row(
+                    children: [
+                      Icon(Icons.badge, color: Colors.blue, size: 20),
+                      SizedBox(width: 8),
+                      Text('Role: ${widget.userRole.toUpperCase()}', style: TextStyle(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.fingerprint, color: Colors.grey, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(child: Text('ID: $_currentUserId', style: TextStyle(fontSize: 12, color: Colors.grey[600]))),
+                    ],
+                  ),
                 ],
               ),
-            ),
-            SizedBox(height: 16),
-            Text('Switch Role:', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            DropdownButton<String>(
-              value: widget.userRole,
-              isExpanded: true,
-              items: [
-                DropdownMenuItem(value: 'inspector', child: Row(children: [Icon(Icons.search, size: 20, color: Colors.blue), SizedBox(width: 8), Text('Inspector')])),
-                DropdownMenuItem(value: 'vendor', child: Row(children: [Icon(Icons.qr_code_2, size: 20, color: Colors.teal), SizedBox(width: 8), Text('Vendor')])),
-                DropdownMenuItem(value: 'user', child: Row(children: [Icon(Icons.person, size: 20, color: Colors.grey), SizedBox(width: 8), Text('User')])),
-              ],
-              onChanged: (role) {
-                Navigator.pop(context);
-                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen(userRole: role!)));
-              },
             ),
           ],
         ),

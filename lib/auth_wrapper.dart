@@ -5,11 +5,38 @@ import 'home_screen.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
+  @override
+  _AuthWrapperState createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
   final AuthService _authService = AuthService();
+  bool _hasSignedOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _signOutOnStart();
+  }
+
+  Future<void> _signOutOnStart() async {
+    await _authService.signOut();
+    setState(() {
+      _hasSignedOut = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!_hasSignedOut) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return StreamBuilder<User?>(
       stream: _authService.authStateChanges,
       builder: (context, snapshot) {
