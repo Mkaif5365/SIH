@@ -156,9 +156,11 @@ class DemoFirebaseService {
     if (email == 'vendor@qrail.com') role = 'vendor';
     
     return UserModel(
+      uid: 'demo_uid_${role}',
       email: email,
       name: 'Demo User',
       role: role,
+      createdAt: DateTime.now(),
     );
   }
 
@@ -166,9 +168,11 @@ class DemoFirebaseService {
     await Future.delayed(Duration(milliseconds: 500));
     
     return UserModel(
+      uid: 'demo_uid_${role}_${DateTime.now().millisecondsSinceEpoch}',
       email: email,
       name: name,
       role: role,
+      createdAt: DateTime.now(),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'simple_auth_screen.dart';
+import 'services/auth_service.dart';
 import 'qr_scanner_screen.dart';
 import 'screens/qr_generator_screen.dart';
 import 'screens/inventory_screen.dart';
@@ -11,13 +12,14 @@ import 'screens/manage_inspections_screen.dart';
 class HomeScreen extends StatefulWidget {
   final String userRole;
   
-  const HomeScreen({Key? key, required this.userRole}) : super(key: key);
+  const HomeScreen({super.key, required this.userRole});
   
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  final AuthService _authService = AuthService();
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   
@@ -173,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildActionButton(String text, IconData icon, Color color, VoidCallback onPressed, {bool isOutlined = false}) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 64,
       child: isOutlined
@@ -269,9 +271,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _logout() {
-    if (mounted) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => SimpleAuthScreen()));
+  void _logout() async {
+    try {
+      await _authService.signOut();
+      if (mounted) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => SimpleAuthScreen()));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -385,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildGridButton(String text, IconData icon, Color color, VoidCallback onPressed) {
-    return Container(
+    return SizedBox(
       height: 80,
       child: ElevatedButton(
         onPressed: onPressed,

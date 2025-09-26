@@ -31,10 +31,9 @@ class PartModel {
     this.specifications,
   });
 
-  factory PartModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory PartModel.fromMap(Map<String, dynamic> data, String id) {
     return PartModel(
-      id: doc.id,
+      id: id,
       partName: data['partName'] ?? '',
       vendorName: data['vendorName'] ?? '',
       vendorId: data['vendorId'] ?? '',
@@ -50,7 +49,7 @@ class PartModel {
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toMap() {
     return {
       'partName': partName,
       'vendorName': vendorName,

@@ -1,4 +1,4 @@
-package com.sih.qrail;
+package com.codesutra.qrail;
 
 import io.flutter.embedding.android.FlutterActivity;
 

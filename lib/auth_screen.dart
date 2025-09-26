@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
@@ -391,7 +393,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                         
                         // Submit Button
-                        Container(
+                        SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(

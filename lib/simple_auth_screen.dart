@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
+import 'services/auth_service.dart';
+import 'models/user_model.dart';
 
 class SimpleAuthScreen extends StatefulWidget {
   @override
@@ -10,11 +13,12 @@ class _SimpleAuthScreenState extends State<SimpleAuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool _isLogin = true;
   bool _isLoading = false;
   String _selectedRole = 'inspector';
 
-  void _authenticate() {
+  void _authenticate() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill all fields')),
@@ -31,20 +35,41 @@ class _SimpleAuthScreenState extends State<SimpleAuthScreen> {
 
     setState(() => _isLoading = true);
     
-    // Simulate authentication delay
-    Future.delayed(Duration(seconds: 1), () {
-      if (mounted) {
-        String role = _isLogin ? 'inspector' : _selectedRole;
-        final email = _emailController.text.toLowerCase();
-        
-        if (email.contains('inspector')) role = 'inspector';
-        if (email.contains('vendor')) role = 'vendor';
-        
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => HomeScreen(userRole: role)),
+    try {
+      UserModel? user;
+      
+      if (_isLogin) {
+        // Sign in existing user
+        user = await _authService.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      } else {
+        // Register new user
+        user = await _authService.registerWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          name: _nameController.text.trim(),
+          role: _selectedRole,
         );
       }
-    });
+      
+      if (user != null && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomeScreen(userRole: user!.role)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Authentication failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

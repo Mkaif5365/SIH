@@ -6,7 +6,7 @@ class QRResultScreen extends StatefulWidget {
   final PartModel part;
   final String inspectorId;
   
-  const QRResultScreen({Key? key, required this.part, required this.inspectorId}) : super(key: key);
+  const QRResultScreen({super.key, required this.part, required this.inspectorId});
   
   @override
   _QRResultScreenState createState() => _QRResultScreenState();

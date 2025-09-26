@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../models/part_model.dart';
-import '../services/firebase_service.dart';
+import '../services/parts_service.dart';
+import '../services/qr_download_service.dart';
 
 class QRGeneratorScreen extends StatefulWidget {
   final String vendorId;
@@ -21,10 +22,13 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   final _warrantyController = TextEditingController();
   final _inspectionIntervalController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final PartsService _partsService = PartsService();
+  final GlobalKey _qrKey = GlobalKey();
   
   DateTime _manufacturingDate = DateTime.now();
   String? _generatedPartId;
   bool _isLoading = false;
+  bool _isDownloading = false;
 
   void _showImageNotSupported() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +70,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         status: 'active',
       );
       
-      final partId = await FirebaseService.createPart(part);
+      final partId = await _partsService.createPart(part);
       
       setState(() {
         _generatedPartId = partId;
@@ -101,6 +105,39 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
       _manufacturingDate = DateTime.now();
       _generatedPartId = null;
     });
+  }
+
+  Future<void> _downloadQR() async {
+    if (_generatedPartId == null) return;
+    
+    setState(() => _isDownloading = true);
+    
+    try {
+      bool success = await QRDownloadService.downloadQRCode(
+        _qrKey, 
+        _partNameController.text.trim()
+      );
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('QR Code saved to gallery!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw Exception('Failed to save QR code');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to download QR: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isDownloading = false);
+    }
   }
 
   @override
@@ -337,11 +374,14 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 8, offset: Offset(0, 2))],
                             ),
-                            child: QrImageView(
-                              data: _generatedPartId!,
-                              version: QrVersions.auto,
-                              size: 200.0,
-                              backgroundColor: Colors.white,
+                            child: RepaintBoundary(
+                              key: _qrKey,
+                              child: QrImageView(
+                                data: _generatedPartId!,
+                                version: QrVersions.auto,
+                                size: 200.0,
+                                backgroundColor: Colors.white,
+                              ),
                             ),
                           ),
                           SizedBox(height: 16),
@@ -356,30 +396,54 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           SizedBox(height: 20),
-                          Row(
+                          Column(
                             children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: _resetForm,
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.teal[600],
-                                    side: BorderSide(color: Colors.teal[600]!),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  child: Text('Create Another'),
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () => Navigator.pop(context),
+                              Container(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: _isDownloading ? null : _downloadQR,
+                                  icon: _isDownloading 
+                                    ? SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      )
+                                    : Icon(Icons.download),
+                                  label: Text(_isDownloading ? 'Downloading...' : 'Print QR Code'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.teal[600],
+                                    backgroundColor: Colors.green[600],
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
-                                  child: Text('Done'),
                                 ),
+                              ),
+                              SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: _resetForm,
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.teal[600],
+                                        side: BorderSide(color: Colors.teal[600]!),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      child: Text('Create Another'),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal[600],
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      child: Text('Done'),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
